@@ -4165,5 +4165,9 @@
     "Generate 'get' and 'set' accessors": {
         "category": "Message",
         "code": 95046
+    },
+    "Move to new file": {
+        "category": "Message",
+        "code": 95047
     }
 }

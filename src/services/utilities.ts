@@ -1149,6 +1149,10 @@ namespace ts {
         return createTextSpanFromBounds(range.pos, range.end);
     }
 
+    export function createTextRangeFromSpan(span: TextSpan): TextRange {
+        return createTextRange(span.start, span.start + span.length);
+    }
+
     export function createTextChangeFromStartLength(start: number, length: number, newText: string): TextChange {
         return createTextChange(createTextSpan(start, length), newText);
     }
