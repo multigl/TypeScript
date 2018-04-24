@@ -211,7 +211,7 @@ namespace ts.textChanges {
 
     export class ChangeTracker {
         private readonly changes: Change[] = [];
-        private readonly newFiles: { readonly fileName: string, readonly statements: ReadonlyArray<Statement> }[] = [];
+        private readonly newFiles: { readonly oldFile: SourceFile, readonly fileName: string, readonly statements: ReadonlyArray<Statement> }[] = [];
         private readonly deletedNodesInLists: true[] = []; // Stores ids of nodes in lists that we already deleted. Used to avoid deleting `, ` twice in `a, b`.
         // Map from class id to nodes to insert at the start
         private readonly nodesInsertedAtClassStarts = createMap<{ sourceFile: SourceFile, cls: ClassLikeDeclaration, members: ClassElement[] }>();
@@ -657,15 +657,15 @@ namespace ts.textChanges {
         public getChanges(validate?: ValidateNonFormattedText): FileTextChanges[] {
             this.finishInsertNodeAtClassStart();
             const x = changesToText.getTextChangesFromChanges(this.changes, this.newLineCharacter, this.formatContext, validate); //name
-            for (const { fileName, statements } of this.newFiles) {
-                x.push(changesToText.forNewFile(fileName, statements, this.newLineCharacter));
+            for (const { oldFile, fileName, statements } of this.newFiles) {
+                x.push(changesToText.forNewFile(oldFile, fileName, statements, this.newLineCharacter));
             }
             return x;
         }
 
         //mv
-        public createNewFile(fileName: string, statements: ReadonlyArray<Statement>) {
-            this.newFiles.push({ fileName, statements });
+        public createNewFile(oldFile: SourceFile, fileName: string, statements: ReadonlyArray<Statement>) {
+            this.newFiles.push({ oldFile, fileName, statements });
         }
     }
 
@@ -689,8 +689,8 @@ namespace ts.textChanges {
         }
 
         //name
-        export function forNewFile(fileName: string, statements: ReadonlyArray<Statement>, newLineCharacter: string): FileTextChanges {
-            const text = statements.map(s => getNonformattedText(s, undefined, newLineCharacter)).join(newLineCharacter);
+        export function forNewFile(oldFile: SourceFile, fileName: string, statements: ReadonlyArray<Statement>, newLineCharacter: string): FileTextChanges {
+            const text = statements.map(s => getNonformattedText(s, oldFile, newLineCharacter)).join(newLineCharacter);
             return { fileName, textChanges: [createTextChange(createTextSpan(0, 0), text)] };
         }
 

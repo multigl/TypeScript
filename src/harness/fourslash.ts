@@ -3062,7 +3062,39 @@ Actual: ${stringify(fullActual)}`);
                     return { renamePosition, newContent };
                 }
             }
+        }
 
+        public moveToNewFile(options: FourSlashInterface.MoveToNewFileOptions): void {
+            assert(this.getRanges().length === 1);
+            const range = this.getRanges()[0];
+            const refactor = ts.find(this.languageService.getApplicableRefactors(this.activeFile.fileName, range, ts.defaultPreferences), r => r.name === "Move to new file");
+            assert(refactor.actions.length === 1);
+            const action = ts.first(refactor.actions);
+            assert(action.name === "Move to new file");
+            assert(action.description === "Move to new file");
+
+            const editInfo = this.languageService.getEditsForRefactor(this.activeFile.fileName, this.formatCodeSettings, range, refactor.name, action.name, ts.defaultPreferences);
+            for (const edit of editInfo.edits) {
+                const newContent = options.newFileContents[edit.fileName];
+                if (newContent === undefined) {
+                    this.raiseError(`There was an edit in ${edit.fileName} but new content was not specified.`);
+                }
+                if (this.testData.files.some(f => f.fileName === edit.fileName)) {
+                    this.applyEdits(edit.fileName, edit.textChanges, /*isFormattingEdit*/ false);
+                    this.openFile(edit.fileName);
+                    this.verifyCurrentFileContent(newContent);
+                }
+                else {
+                    assert(edit.textChanges.length === 1);
+                    const change = ts.first(edit.textChanges);
+                    assert.deepEqual(change.span, ts.createTextSpan(0, 0));
+                    assert.equal(change.newText, newContent, `Content for ${edit.fileName}`);
+                }
+            }
+
+            for (const fileName in options.newFileContents) {
+                assert(editInfo.edits.some(e => e.fileName === fileName));
+            }
         }
 
         public verifyFileAfterApplyingRefactorAtMarker(
@@ -4373,6 +4405,10 @@ namespace FourSlashInterface {
         public getEditsForFileRename(options: GetEditsForFileRenameOptions) {
             this.state.getEditsForFileRename(options);
         }
+
+        public moveToNewFile(options: FourSlashInterface.MoveToNewFileOptions): void {
+            this.state.moveToNewFile(options);
+        }
     }
 
     export class Edit {
@@ -4719,6 +4755,10 @@ namespace FourSlashInterface {
     export interface GetEditsForFileRenameOptions {
         readonly oldPath: string;
         readonly newPath: string;
+        readonly newFileContents: { readonly [fileName: string]: string };
+    }
+
+    export interface MoveToNewFileOptions {
         readonly newFileContents: { readonly [fileName: string]: string };
     }
 }

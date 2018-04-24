@@ -61,7 +61,8 @@ namespace ts {
         return result;
     }
 
-    function getPathUpdater(oldFilePath: string, newFilePath: string, host: LanguageServiceHost): (oldPath: string) => string | undefined {
+    //!
+    export function getPathUpdater(oldFilePath: string, newFilePath: string, host: LanguageServiceHost): (oldPath: string) => string | undefined {
         // Get the relative path from old to new location, and append it on to the end of imports and normalize.
         const rel = getRelativePath(newFilePath, getDirectoryPath(oldFilePath), createGetCanonicalFileName(hostUsesCaseSensitiveFileNames(host)));
         return oldPath => {
