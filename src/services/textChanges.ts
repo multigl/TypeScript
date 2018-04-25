@@ -521,6 +521,10 @@ namespace ts.textChanges {
             }
         }
 
+        public insertExportModifier(sourceFile: SourceFile, node: FunctionDeclaration | ClassDeclaration | VariableStatement) {
+            this.insertNodeAt(sourceFile, node.getStart(sourceFile), createModifier(SyntaxKind.ExportKeyword), { suffix: " " });
+        }
+
         /**
          * This function should be used to insert nodes in lists when nodes don't carry separators as the part of the node range,
          * i.e. arguments in arguments lists, parameters in parameter lists etc.
@@ -690,7 +694,7 @@ namespace ts.textChanges {
 
         //name
         export function forNewFile(oldFile: SourceFile, fileName: string, statements: ReadonlyArray<Statement>, newLineCharacter: string): FileTextChanges {
-            const text = statements.map(s => getNonformattedText(s, oldFile, newLineCharacter)).join(newLineCharacter);
+            const text = statements.map(s => getNonformattedText(s, oldFile, newLineCharacter).text).join(newLineCharacter);
             return { fileName, textChanges: [createTextChange(createTextSpan(0, 0), text)] };
         }
 
