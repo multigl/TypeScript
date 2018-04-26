@@ -1225,6 +1225,14 @@ namespace ts {
     export function hostGetCanonicalFileName(host: LanguageServiceHost): GetCanonicalFileName {
         return createGetCanonicalFileName(hostUsesCaseSensitiveFileNames(host));
     }
+
+    export function makeImportIfNecessary(defaultImport: Identifier, namedImports: ReadonlyArray<ImportSpecifier>, moduleSpecifier: string): ImportDeclaration | undefined {
+        return defaultImport || namedImports && namedImports.length ? makeImport(defaultImport, namedImports, moduleSpecifier) : undefined;
+    }
+
+    export function makeImport(defaultImport: Identifier, namedImports: ReadonlyArray<ImportSpecifier>, moduleSpecifier: string | Expression): ImportDeclaration {
+        return createImportDeclaration(undefined, undefined, createImportClause(defaultImport, createNamedImports(namedImports)), typeof moduleSpecifier === "string" ? createLiteral(moduleSpecifier) : moduleSpecifier);
+    }
 }
 
 // Display-part writer helpers

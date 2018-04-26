@@ -409,6 +409,7 @@ namespace ts {
         return array;
     }
 
+
     export function filterMutate<T>(array: T[], f: (x: T, i: number, array: T[]) => boolean): void {
         let outIndex = 0;
         for (let i = 0; i < array.length; i++) {
